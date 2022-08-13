@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Project deployment bucket'
+
+Parameters:
+  Project:
+    Type: String
+    Description: 'The name of the project'
+  DeploymentBucket:
+    Type: String
+    Description: 'Deployment bucket name'
+  Stage:
+    Type: String
+    Default: 'dev'
+    Description: 'The stage of the application'
+
+Resources:
+  S3DeploymentBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${DeploymentBucket}-${Stage}"
+      Tags:
+        - Key: project
+          Value: !Ref Project
+        - Key: stage
+          Value: !Ref Stage

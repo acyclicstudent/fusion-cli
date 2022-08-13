@@ -1,0 +1,115 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Project Cognito Auth'
+
+Parameters:
+  Project:
+    Type: String
+    Description: 'The name of the Project.'
+  Stage:
+    Type: String
+    Default: dev
+    Description: 'The Stage of the application.'
+
+Resources:
+  # Cognito Lambda PreSignup Trigger
+  # AuthPreSignUpTriggerPermission:
+  #   Type: AWS::Lambda::Permission
+  #   Properties:
+  #     SourceArn: !GetAtt UserPool.Arn
+  #     FunctionName: !Sub "${Project}-service-functioname-${Stage}"
+  #     Principal: cognito-idp.amazonaws.com
+  #     Action: lambda:invokeFunction
+  
+  # User Pool
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub "${Project}-auth-${Stage}"
+      
+      # Password configuration.
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+          RequireUppercase: true
+
+      # Triggers.
+      # LambdaConfig:
+      #   PreSignUp:
+      #     Fn::ImportValue: !Sub "${Project}-service-functionanme-${Stage}"
+      
+      # Sign in config.
+      AutoVerifiedAttributes:
+        - email
+      AliasAttributes:
+        - email
+        # If login with username is needed.
+        #- preferred_username
+
+      # User Attributes.
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Mutable: false
+          Required: true
+          StringAttributeConstraints:
+            MaxLength: "200"
+        - Name: name
+          AttributeDataType: String
+          Mutable: true
+          Required: true
+          StringAttributeConstraints:
+            MaxLength: "75"
+        # - Name: preferred_username
+        #   AttributeDataType: String
+        #   Mutable: true
+        #   Required: false
+        #   StringAttributeConstraints:
+        #     MaxLength: 100
+
+      # Tags.
+      UserPoolTags:
+          project: !Ref Project
+          stage: !Ref Stage
+
+  # Group definitions.
+  # GroupAdmins:
+  #   Type: AWS::Cognito::UserPoolGroup
+  #   Properties:
+  #     GroupName: "admins"
+  #     UserPoolId: !Ref UserPool
+  #     Description: 'Group for admins.'
+
+  # Web Client
+  WebUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub '${Project}-auth-client-web-${Stage}'
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
+      RefreshTokenValidity: 30
+      ExplicitAuthFlows:
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      ReadAttributes:
+        - name
+        - email
+        - sub
+        - updated_at
+
+Outputs:
+  UserPoolArn:
+    Value: !GetAtt UserPool.Arn
+    Export:
+      Name: !Sub "${Project}-auth-user-pool-arn-${Stage}"
+  UserPoolId:
+    Value: !Ref UserPool
+    Export:
+      Name: !Sub "${Project}-auth-user-pool-id-${Stage}"
+  WebUserPoolClient:
+    Value: !Ref WebUserPoolClient
+    Export:
+      Name: !Sub "${Project}-auth-web-client-${Stage}"

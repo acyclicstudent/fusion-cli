@@ -1,0 +1,91 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Project WEB CDN'
+
+Parameters:
+  Project:
+    Type: String
+    Description: 'The name of the project.'
+  Stage:
+    Type: String
+    Default: dev
+    Description: 'The stage of the application.'
+  Domain:
+    Type: String
+    Description: 'Application Domain'
+  WEBCertificate:
+    Type: String
+    Description: 'Certificate ARN'
+
+Resources:
+  # CloudFront Distribution
+  WEBDistribution:
+    Type: AWS::CloudFront::Distribution
+    DependsOn: WEBS3Bucket
+    Properties:
+      DistributionConfig:
+        Aliases: 
+          - !Ref Domain
+        Enabled: true
+        Comment: !Sub '${Project}-${Stage} Web CDN Distribution'
+        Origins:
+          - Id: !Sub "${Project}-web-storage-${Stage}"
+            DomainName: !Sub "${Domain}.s3-website-us-west-2.amazonaws.com"
+            CustomOriginConfig:
+              OriginProtocolPolicy: http-only
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginSSLProtocols: 
+                - TLSv1.2
+        DefaultRootObject: "index.html"
+        DefaultCacheBehavior:
+          TargetOriginId: !Sub "${Project}-web-storage-${Stage}"
+          ViewerProtocolPolicy: redirect-to-https
+          Compress: true
+          SmoothStreaming: false
+          CachePolicyId: "658327ea-f89d-4fab-a63d-7e88639e58f6"
+        PriceClass: PriceClass_100
+        ViewerCertificate:
+          AcmCertificateArn: !Ref WEBCertificate
+          MinimumProtocolVersion: TLSv1.2_2021
+          SslSupportMethod: sni-only
+      Tags:
+        - Key: project
+          Value: !Ref Project
+        - Key: stage
+          Value: !Ref Stage
+  
+  # S3 Bucket
+  WEBS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref Domain
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+    DeletionPolicy: Retain
+  
+  # Bucket Permission 
+  WEBBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      PolicyDocument:
+        Id: MyPolicyForWeb
+        Version: 2012-10-17
+        Statement:
+          - Sid: PublicReadForGetBucketObjects
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Join 
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref WEBS3Bucket
+                - /*
+      Bucket: !Ref WEBS3Bucket
+
+Outputs:
+  WEBCNAME:
+    Value: !GetAtt WEBDistribution.DomainName
+    Export: 
+      Name: !Sub '${project}-web-domain-${stage}'

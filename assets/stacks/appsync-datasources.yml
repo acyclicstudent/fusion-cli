@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Noporverse Graph API DataSources'
+
+Parameters:
+  Project:
+    Type: String
+    Description: 'The name of the project.'
+  Stage:
+    Type: String
+    Default: dev
+    Description: 'The stage of the application.'
+
+Resources:
+  ServiceDS:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId:
+        Fn::ImportValue: !Sub "${Project}-api-id-${Stage}"
+      Name: !Sub "ServiceDS_${stage}"
+      Type: AWS_LAMBDA
+      LambdaConfig:
+        LambdaFunctionArn:
+          Fn::ImportValue: !Sub "${Project}-service-file-upload-${Stage}"
+      ServiceRoleArn:
+        Fn::ImportValue: !Sub "${Project}-APILambdaInvokeAllRole-${Stage}"

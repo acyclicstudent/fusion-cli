@@ -1,0 +1,155 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Project Cognito Auth'
+
+Parameters:
+  Project:
+    Type: String
+    Description: 'The name of the Project.'
+  Stage:
+    Type: String
+    Default: dev
+    Description: 'The Stage of the application.'
+
+Resources:
+  ############################
+  # Policies.
+  ############################
+  DynamoPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: 'Policy for dynamodb database.'
+      ManagedPolicyName: !Sub "${Project}-permission-dynamodb-${Stage}"
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:PutItem
+              - dynamodb:DeleteItem
+              - dynamodb:Query
+              - dynamodb:Scan
+              - dynamodb:UpdateItem
+              - dynamodb:BatchGetItem
+              - dynamodb:BatchWriteItem
+            Resource: !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${Project}-*'
+  CloudwatchLoggingPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: 'Policy for cloudwatch logging.'
+      ManagedPolicyName: !Sub "${Project}-permission-cloudwatch-${Stage}"
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+            Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*'
+          - Effect: Allow
+            Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*:*'
+  S3ControlPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: 'Policy for S3 Control.'
+      ManagedPolicyName: !Sub "${Project}-permission-s3-${Stage}"
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:DeleteObject
+              - s3:ListBucketMultipartUploads
+              - s3:AbortMultipartUpload
+              - sts:GetFederationToken
+            Resource: !Sub 'arn:aws:s3:::${Project}-*-${Stage}/*'
+  STSControlPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: 'Policy for STS Control.'
+      ManagedPolicyName: !Sub "${Project}-permission-sts-${Stage}"
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:GetFederationToken
+              - sts:AssumeRoleWithWebIdentity
+              - sts:AssumeRole
+            Resource: "*"
+  ############################
+  # Roles.
+  ############################
+  DefaultLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      ManagedPolicyArns:
+        - !Ref DynamoPolicy
+        - !Ref CloudwatchLoggingPolicy
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 
+                - lambda.amazonaws.com
+                - edgelambda.amazonaws.com
+            Action: sts:AssumeRole
+  LambdaWithS3ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      ManagedPolicyArns:
+        - !Ref CloudwatchLoggingPolicy
+        - !Ref DynamoPolicy
+        - !Ref S3ControlPolicy
+        - !Ref STSControlPolicy
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+  # AppSync invocations policies and roles.
+  APILambdaInvokeAllPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: 'Policy for API Lambda invocations.'
+      ManagedPolicyName: !Sub "${Project}-permission-api-lambda-invoke-all-${Stage}"
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - lambda:InvokeFunction
+            Resource: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Project}-*'
+  APILambdaInvokeAllRole:
+    Type: AWS::IAM::Role
+    Properties:
+      ManagedPolicyArns:
+        - !Ref APILambdaInvokeAllPolicy
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: appsync.amazonaws.com
+            Action: sts:AssumeRole
+
+Outputs:
+  DefaultLambdaExecutionRole:
+    Value: !GetAtt DefaultLambdaExecutionRole.Arn
+    Export:
+      Name: !Sub "${Project}-DefaultLambdaExecutionRole-${Stage}"
+  LambdaWithS3ExecutionRole:
+    Value: !GetAtt LambdaWithS3ExecutionRole.Arn
+    Export:
+      Name: !Sub "${Project}-LambdaWithS3ExecutionRole-${Stage}"
+  APILambdaInvokeAllRole:
+    Value: !GetAtt APILambdaInvokeAllRole.Arn
+    Export:
+      Name: !Sub "${Project}-APILambdaInvokeAllRole-${Stage}"

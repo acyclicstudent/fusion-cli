@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Noporverse Graph API'
+
+Parameters:
+  Project:
+    Type: String
+    Description: 'The name of the project.'
+  Stage:
+    Type: String
+    Default: dev
+    Description: 'The stage of the application.'
+  Schema:
+    Type: String
+    Description: 'GraphQL Schema S3 Key.'
+  DeploymentBucket:
+    Type: String
+    Description: 'Deployment bucket name'
+
+Resources:
+  API:
+    Type: AWS::AppSync::GraphQLApi
+    Properties:
+      Name: !Sub "${Project}-api-graph-${Stage}"
+      # Authentication.
+      AuthenticationType: AMAZON_COGNITO_USER_POOLS
+      UserPoolConfig:
+        DefaultAction: ALLOW
+        AwsRegion: !Sub "${AWS::Region}"
+        UserPoolId:
+          Fn::ImportValue: !Sub "${Project}-auth-user-pool-id-${Stage}"
+      Tags:
+          - Key: project
+            Value: !Ref project
+          - Key: stage
+            Value: !Ref stage
+  APISchema:
+    Type: AWS::AppSync::GraphQLSchema
+    Properties:
+      ApiId: !GetAtt API.ApiId
+      DefinitionS3Location: !Sub 's3://${DeploymentBucket}-${Stage}/graph/${Schema}'
+  # Domain config
+  # APIDomainName:
+  #   Type: AWS::AppSync::DomainName
+  #   Properties: 
+  #     CertificateArn: !Ref Certificate
+  #     DomainName: !Ref APIDomain
+  # APIDomainAsociation:
+  #   Type: AWS::AppSync::DomainNameApiAssociation
+  #   Properties: 
+  #     ApiId: !GetAttAPI.ApiId
+  #     DomainName: !Ref APIDomainName
+
+Outputs:
+  API:
+    Value: !GetAtt API.ApiId
+    Export:
+      Name: !Sub "${project}-api-id-${stage}"

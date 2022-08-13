@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Project S3 Storage'
+
+Parameters:
+  Project:
+    Type: String
+    Description: 'The name of the project.'
+  Stage:
+    Type: String
+    Default: dev
+    Description: 'The stage of the application.'
+
+Resources:
+  Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      # Bucket Name
+      BucketName: !Sub "${Project}-storage-bucketname-{Stage}"
+      
+      # Aceleration config for fast upload.
+      # AccelerateConfiguration:
+      #   AccelerationStatus: "Enabled"
+
+      # Trigger Events.
+      # NotificationConfiguration:
+      #   LambdaConfigurations:
+      #     - Event: "s3:ObjectCreated:*"
+      #       Function: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Project}-service-functionname-${Stage}"
+      #       Filter:
+      #         S3Key:
+      #           Rules:
+      #             - Name: "prefix"
+      #               Value: "video/"
+
+      # Cors Config.
+      # CorsConfiguration:
+      #   CorsRules:
+      #     - AllowedMethods:
+      #         - GET
+      #         - HEAD
+      #         - PUT
+      #         - POST
+      #         - DELETE
+      #       AllowedOrigins:
+      #         - "*"
+      #       AllowedHeaders:
+      #         - "*"
+      #       ExposedHeaders:
+      #         - "ETag"
+
+      # Tags
+      Tags:
+        - Key: project
+          Value: !Ref Project
+        - Key: stage
+          Value: !Ref Stage
+
+Outputs:
+  Bucket:
+    Value: !Ref Bucket
+    Export:
+      Name: !Sub "${Project}-storage-bucket-${Stage}"

@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Project DB Tables'
+
+Parameters:
+  Project:
+    Type: String
+    Description: 'The name of the project.'
+  Stage:
+    Type: String
+    Default: dev
+    Description: 'The stage of the application.'
+
+Resources:
+  DBUsers:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${Project}-db-users-${Stage}"
+      AttributeDefinitions:
+        - AttributeName: username
+          AttributeType: S
+        - AttributeName: email
+          AttributeType: S
+        - AttributeName: subscriptionType
+          AttributeType: S
+        - AttributeName: subscriptionTime
+          AttributeType: N
+      KeySchema:
+        - AttributeName: username
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      GlobalSecondaryIndexes:
+        - IndexName: subscription-index
+          KeySchema:
+            - AttributeName: subscriptionType
+              KeyType: HASH
+            - AttributeName: subscriptionTime
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: project
+          Value: !Ref Project
+        - Key: stage
+          Value: !Ref Stage
+
+Outputs:
+  DBUsers:
+    Value: !Sub "${Project}-db-users-${Stage}"
+    Export:
+      Name: !Sub "${Project}-db-users-${Stage}"

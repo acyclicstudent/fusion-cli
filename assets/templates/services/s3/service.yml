@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  Project:
+    Type: String
+    Description: 'Project Name'
+  Name:
+    Type: String
+    Description: 'Service Name'
+  Stage:
+    Type: String
+    Description: 'Deployment stage'
+  DeploymentBucket:
+    Type: String
+    Description: 'Deployment bucket'
+  S3Key:
+    Type: String
+    Description: 'S3 Lambda ZIP'
+
+Resources:
+  # S3 Trigger Permission.
+  S3Permission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !Ref Service
+      Principal: "s3.amazonaws.com"
+      SourceArn: !Sub "arn:aws:s3:::bucket-${stage}"
+      SourceAccount: !Ref AWS::AccountId
+  # Service Function Definition.
+  Service:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${Name}-${Stage}"
+      Handler: index.handler
+      Timeout: 10
+      MemorySize: 128
+      Runtime: 'nodejs16.x'
+      Role: 
+        Fn::ImportValue: !Sub ""
+      Code:
+        S3Bucket: !Sub "${DeploymentBucket}-${Stage}"
+        S3Key: !Sub "services/${S3Key}"
+      Environment:
+        Variables:
+          PROJECT: !Ref Project
+          STAGE: !Ref Stage
+      Tags:
+        - Key: "project"
+          Value: !Ref Project
+        - Key: "stage"
+          Value: !Ref Stage
+
+Outputs:
+  Service:
+    Value: !GetAtt Service.Arn
+    Description: 'Service ARN'
+    Export:
+      Name: !Sub "${Name}-${Stage}"

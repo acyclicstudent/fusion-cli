@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Noporverse Graph API Resolvers'
+
+Parameters:
+  Project:
+    Type: String
+    Description: 'The name of the project.'
+  Stage:
+    Type: String
+    Default: dev
+    Description: 'The stage of the application.'
+
+Resources:
+  Resolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId:
+        Fn::ImportValue: !Sub "${Project}-api-id-${Stage}"
+      TypeName: Mutation # Or Query
+      FieldName: resolverName
+      DataSourceName: !Sub "ServiceDS_${stage}"
