@@ -17,15 +17,34 @@ Parameters:
     Description: 'S3 Lambda ZIP'
 
 Resources:
-  # S3 Trigger Permission.
-  S3Permission:
-    Type: AWS::Lambda::Permission
+  # SQS PERMISSION Trigger Permission.
+  QueueTrigger:
+    Type: 'AWS::Lambda::EventSourceMapping'
+    DependsOn:
+      - Service
     Properties:
-      Action: "lambda:InvokeFunction"
-      FunctionName: !Ref Service
-      Principal: "s3.amazonaws.com"
-      SourceArn: !Sub "arn:aws:s3:::bucket-${Stage}"
-      SourceAccount: !Ref AWS::AccountId
+      EventSourceArn: !GetAtt 
+        - QueueFiFo
+        - Arn
+      FunctionName: !GetAtt 
+        - Service
+        - Arn
+      BatchSize: 10
+      Enabled: true
+  QueueFiFo:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: !Sub '${Project}-queue-name-${Stage}.fifo'
+      FifoQueue: true
+      DeduplicationScope: queue
+      ContentBasedDeduplication: true
+      FifoThroughputLimit: perQueue
+      ReceiveMessageWaitTimeSeconds: 20
+      Tags:
+        - Key: project
+          Value: !Ref Project
+        - Key: stage
+          Value: !Ref Stage
   # Service Function Definition.
   Service:
     Type: AWS::Lambda::Function
@@ -39,6 +58,7 @@ Resources:
         Fn::ImportValue: !Sub "${Project}-DefaultLambdaExecutionRole-${Stage}"
       Code:
         S3Bucket: !Sub "${DeploymentBucket}-${Stage}"
+        QUEUE: !Ref QueueFiFo
         S3Key: !Sub "services/${S3Key}"
       Environment:
         Variables:

@@ -26,7 +26,7 @@ Resources:
       MemorySize: 128
       Runtime: 'nodejs16.x'
       Role: 
-        Fn::ImportValue: !Sub ""
+        Fn::ImportValue: !Sub "${Project}-DefaultLambdaExecutionRole-${Stage}"
       Code:
         S3Bucket: !Sub "${DeploymentBucket}-${Stage}"
         S3Key: !Sub "services/${S3Key}"
