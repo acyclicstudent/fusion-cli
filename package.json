@@ -7,6 +7,7 @@
     "fusion": "bin/fusion.js"
   },
   "scripts": {
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
