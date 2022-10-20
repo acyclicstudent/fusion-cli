@@ -88,4 +88,4 @@ Outputs:
   WEBCNAME:
     Value: !GetAtt WEBDistribution.DomainName
     Export: 
-      Name: !Sub '${project}-web-domain-${stage}'
+      Name: !Sub '${Project}-web-domain-${Stage}'

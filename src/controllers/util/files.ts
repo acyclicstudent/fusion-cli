@@ -1,8 +1,9 @@
 import path from 'path';
+import { workDir } from '../cli/program';
 
 export const createPath = (fileOrDir: string) => {
     return path.join(
-        process.cwd(),
+        workDir,
         fileOrDir
     );
 }

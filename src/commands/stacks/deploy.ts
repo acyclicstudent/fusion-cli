@@ -1,7 +1,7 @@
 import Chalk from 'chalk';
 import fs from 'fs-extra';
 import inquirer from 'inquirer';
-import { retrieveConfig } from '../../controllers/cli/config';
+import { retrieveConfig, retrieveStage } from '../../controllers/cli/config';
 import { createPath } from '../../controllers/util/files';
 import childProcess from 'child_process';
 
@@ -52,13 +52,18 @@ export interface DeployArgs {
 }
 const deployStack = (args: DeployArgs) => {
     const { Project } = args.config;
+    const params = Object.keys(args.config.Parameters || {})
+        .map((param) => 
+            `${param}=${args.config.Parameters[param].replace('{Fusion::Project}', Project.Name).replace('{Fusion::Stage}', Project.Stage)}`
+        )
+        .join(' ');
 
     const command = `
         aws cloudformation deploy
         --region ${Project.Region} --profile ${Project.AWSProfile}
-        --template-file ./stacks/${args.stack}
-        --stack-name ${Project.Name}-backend-${args.stackName}-${Project.Stage}
-        --parameter-overrides Project=${Project.Name} Stage=${Project.Stage} DeploymentBucket=${Project.DeploymentBucket}
+        --template-file ${createPath('./stacks/' + args.stack)}
+        --stack-name ${Project.Name}-backend-${args.stackName}-${retrieveStage()}
+        --parameter-overrides Project=${Project.Name} Stage=${retrieveStage()} DeploymentBucket=${Project.DeploymentBucket} ${params}
         --capabilities CAPABILITY_NAMED_IAM
     `;
 

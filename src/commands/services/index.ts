@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import { create } from "./create";
 import { deploy } from "./deploy";
+import { install } from "./install";
 
 export const registerServicesCommand = (program: Command) => {
     const services = program
@@ -18,4 +19,9 @@ export const registerServicesCommand = (program: Command) => {
         command('create')
         .description('Create a new service.')
         .action(create);
+
+    services.
+        command('install [package]')
+        .description('Create a new service.')
+        .action(install);
 }

@@ -30,6 +30,9 @@ export const create = async () => {
         fs.mkdirSync(createPath(`services/${serviceName}`));
         copyTemplate(serviceName, result.type);
 
+        const install = childProcess.execSync(`cd ${createPath('services/' + serviceName)} && npm install`);
+        console.log(install.toString('utf-8'));
+
         console.log(
             Chalk.green(
                 `

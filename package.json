@@ -1,5 +1,5 @@
 {
-  "name": "fusion-cli",
+  "name": "@nirbby-lab/fusion-cli",
   "version": "1.0.0",
   "description": "Fusion Serverless Deployment  CLI",
   "main": "index.js",
@@ -8,11 +8,13 @@
   },
   "scripts": {
     "build": "tsc",
+    "postinstall": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Nirbby LAB",
+  "license": "Apache-2.0",
+  "repository": "https://github.com/acyclicstudent/fusion-cli",
   "dependencies": {
     "@lvi/ink-text-input": "^4.0.2",
     "bestzip": "^2.2.0",
