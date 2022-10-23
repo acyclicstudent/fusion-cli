@@ -13,14 +13,18 @@ export const deploy = async () => {
         throw new Error('There are no services. Please create a new one and try again.');
     
     const selected = await requestServiceToUser(services); 
-    console.log(Chalk.yellow('Deploying stack...'));
     reset(selected.service);
+    console.log(Chalk.yellow('Building...'));
     buildCode(selected.service);
     copyPackage(selected.service);
+    console.log(Chalk.yellow('Installing dependencies...'));
     installDependencies(selected.service);
+    console.log(Chalk.yellow('Zipping...'));
     const zipFile = await zipFiles(selected.service);
     const config = retrieveConfig();
+    console.log(Chalk.yellow('Uploading to S3 Deployment Bucket...'));
     uploadToS3(selected.service, config);
+    console.log(Chalk.yellow('Deploying stack...'));
     deployStack(config, selected.service, zipFile);
 }
 
@@ -65,7 +69,7 @@ const zipFiles = async (service: string) => {
     await zip({
         cwd: createPath(`services/${service}/build/`),
         source: `*`,
-        destination: createPath(`../dist/${zipFile}`)
+        destination: createPath(`services/${service}/dist/${zipFile}`)
     });
 
     return zipFile;
@@ -86,7 +90,7 @@ const uploadToS3 = (service: string, config: any) => {
     const syncCommand = `
         aws s3 sync 
         ${createPath('services/' + service + '/dist/')}
-        s3://${config.Project.DeploymentBucket}-${config.Project.Stage}/services/${service} --profile ${config.Project.AWSProfile}
+        s3://${config.Project.DeploymentBucket}-${retrieveStage()}/services/${service} --profile ${config.Project.AWSProfile}
         --delete
     `;
 

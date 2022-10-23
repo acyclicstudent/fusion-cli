@@ -27,7 +27,7 @@ export const retrieveConfig = () => {
             isFound = true;
         }
     
-        updateWorkDir(configFile.replace('/fusion.yml', ''));
+        updateWorkDir(configFile.replace(/(\/|\\)fusion.yml/, ''));
 
         return yaml.parse(
             fs
@@ -41,5 +41,6 @@ export const retrieveConfig = () => {
 
 export const retrieveStage = () => {
     const opts = program.opts();
-    return opts.stage || 'dev';
+    const stage = opts.stage || 'dev'; 
+    return stage;
 }
