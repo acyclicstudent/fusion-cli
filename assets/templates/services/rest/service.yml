@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  Project:
+    Type: String
+    Description: 'Project Name'
+  Name:
+    Type: String
+    Description: 'Service Name'
+  Stage:
+    Type: String
+    Description: 'Deployment stage'
+  DeploymentBucket:
+    Type: String
+    Description: 'Deployment bucket'
+  S3Key:
+    Type: String
+    Description: 'S3 Lambda ZIP'
+
+Resources:
+  Service:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${Name}-${Stage}"
+      Handler: index.handler
+      Timeout: 10
+      MemorySize: 128
+      Runtime: 'nodejs16.x'
+      Role: 
+        Fn::ImportValue: !Sub "${Project}-DefaultLambdaExecutionRole-${Stage}"
+      Code:
+        S3Bucket: !Sub "${DeploymentBucket}-${Stage}"
+        S3Key: !Sub "services/${S3Key}"
+      Environment:
+        Variables:
+          PROJECT: !Ref Project
+          STAGE: !Ref Stage
+      Tags:
+        - Key: "project"
+          Value: !Ref Project
+        - Key: "stage"
+          Value: !Ref Stage
+
+Outputs:
+  Service:
+    Value: !GetAtt Service.Arn
+    Description: 'Service ARN'
+    Export:
+      Name: !Sub "${Name}-${Stage}"

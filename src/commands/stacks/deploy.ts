@@ -54,7 +54,7 @@ const deployStack = (args: DeployArgs) => {
     const { Project } = args.config;
     const params = Object.keys(args.config.Parameters || {})
         .map((param) => 
-            `${param}=${args.config.Parameters[param].replace('{Fusion::Project}', Project.Name).replace('{Fusion::Stage}', Project.Stage)}`
+            `${param}=${args.config.Parameters[param].replace('{Fusion::Project}', Project.Name).replace('{Fusion::Stage}', retrieveStage())}`
         )
         .join(' ');
 
