@@ -16,6 +16,7 @@ const main = () => {
     
     // Parse command line arguments
     program.option('--stage <stage>', 'stage to deploy');
+    program.option('--without-stack', 'Creates lambda without stack, only for function updates.')
     program.parse(process.argv);
 }
 

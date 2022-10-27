@@ -16,10 +16,9 @@ export const registerInitCommand = (program: Command) => {
 export const handleInit = async () => {
     try {
         const config = await requestProjectConfig();
-        config.stage = config.stage || 'dev';
         console.log(Chalk.yellow('Configuring project...'));
         
-        const configFile = `${process.cwd()}/fusion.${config.stage}.yml`;
+        const configFile = `${process.cwd()}/fusion.yml`;
         // Check if already exists a fusion config file.
         if (fs.existsSync(configFile)) throw new Error(`${configFile} already exists.`);
     
@@ -29,7 +28,6 @@ export const handleInit = async () => {
                 Project: {
                     Name: config.project || 'unknown',
                     Region: config.region || 'us-west-2',
-                    Stage: config.stage,
                     AWSProfile: config.profile || 'default',
                     DeploymentBucket: config.bucket || `${config.project}-deployment-bucket`
                 }
@@ -58,11 +56,6 @@ export const requestProjectConfig = async () => {
             name: 'region',
             message: 'Default AWS Region: ',
             default: 'us-west-2'
-        },
-        {
-            name: 'stage',
-            message: 'Project stage: ',
-            default: 'dev'
         },
         {
             name: 'profile',

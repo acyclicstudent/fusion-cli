@@ -5,11 +5,14 @@ import fs from 'fs-extra';
 import { createInternalPath, createPath } from '../../controllers/util/files';
 import inquirer from 'inquirer';
 import childProcess from 'child_process';
+import { program } from '../../controllers/cli/program';
 
 export const create = async () => {
     try {
         const config = retrieveConfig();
         const result = await getServiceType();
+        const opts = program.opts();
+
         // Create service folder if not exists.
         createServicesDir();
 
@@ -29,6 +32,11 @@ export const create = async () => {
         // Create service folder.
         fs.mkdirSync(createPath(`services/${serviceName}`));
         copyTemplate(serviceName, result.type);
+
+        if (opts.withoutStack) {
+            // Se elimina el stack.
+            fs.rm(createPath(`services/${serviceName}/service.yml`));
+        }
 
         const install = childProcess.execSync(`cd ${createPath('services/' + serviceName)} && npm install`);
         console.log(install.toString('utf-8'));
