@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Noporverse Graph API Resolvers'
+Description: 'Graph API Resolvers'
 
 Parameters:
   Project:

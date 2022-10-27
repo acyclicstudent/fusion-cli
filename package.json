@@ -29,9 +29,7 @@
     "inquirer": "^8.2.0",
     "ora": "^6.0.1",
     "react": "^17.0.2",
-    "yaml": "^2.1.1"
-  },
-  "devDependencies": {
+    "yaml": "^2.1.1",
     "@types/clear": "^0.1.2",
     "@types/figlet": "^1.5.4",
     "@types/fs-extra": "^9.0.13",
