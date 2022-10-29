@@ -38,7 +38,7 @@ const uploadToS3 = (config: any) => {
     const syncCommand = `
         aws s3 sync 
         ${createPath('/api/dist/')}
-        s3://${config.Project.DeploymentBucket}-${config.Project.Stage}/api --profile ${config.Project.AWSProfile}
+        s3://${config.Project.DeploymentBucket}-${retrieveStage()}/api --profile ${config.Project.AWSProfile}
         --delete
     `;
 
