@@ -4,6 +4,7 @@ import { registerAPICommand } from './commands/api';
 import { registerServicesCommand } from './commands/services';
 import { registerStacksCommand } from './commands/stacks';
 import { program } from './controllers/cli/program';
+import { registerAuthCommand } from './commands/auth';
 
 
 // Main program.
@@ -12,6 +13,7 @@ const main = () => {
     registerInitCommand(program);
     registerAPICommand(program);
     registerServicesCommand(program);
+    registerAuthCommand(program);
     registerStacksCommand(program);
     
     // Parse command line arguments
