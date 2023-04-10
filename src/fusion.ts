@@ -18,6 +18,8 @@ const main = () => {
     
     // Parse command line arguments
     program.option('--stage <stage>', 'stage to deploy');
+    program.option('--port <port>', 'port for fusion serve');
+    program.option('--service <service>', 'auto select service for fusion serve');
     program.option('--without-stack', 'Creates lambda without stack, only for function updates.')
     program.parse(process.argv);
 }

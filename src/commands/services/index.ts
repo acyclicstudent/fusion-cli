@@ -3,6 +3,7 @@ import { create } from "./create";
 import { deploy } from "./deploy";
 import { install } from "./install";
 import { updateFunction } from "./update-function";
+import { serve } from "./serve";
 
 export const registerServicesCommand = (program: Command) => {
     const services = program
@@ -21,10 +22,10 @@ export const registerServicesCommand = (program: Command) => {
         .description('Create a new service.')
         .action(create);
 
-        services.
-        command('update-function')
-        .description('Update function.')
-        .action(updateFunction);
+    services.
+        command('serve')
+        .description('start server for testing purposes.')
+        .action(serve);
 
     services.
         command('install [package]')

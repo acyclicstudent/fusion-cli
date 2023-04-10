@@ -30,10 +30,6 @@ export const updateFunction = async () => {
     update(selected.service, zipFile, config);
 }
 
-
-
-
-
 const buildCode = (service: string) => {
     const command = `
         cd ${createPath('services/' + service + '&& tsc')} 
