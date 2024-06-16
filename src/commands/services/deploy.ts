@@ -78,11 +78,11 @@ const zipFiles = async (service: string) => {
 const reset = async (service: string) => {
     if (fs.existsSync(createPath(`services/${service}/dist`))) {
         console.log('Removing dist');
-        fsa.rmdirSync(createPath(`services/${service}/dist`), { recursive: true });
+        fsa.rmSync(createPath(`services/${service}/dist`), { recursive: true });
     }
     if (fs.existsSync(createPath(`services/${service}/build`))) {
         console.log('Removing build');
-        fsa.rmdirSync(createPath(`services/${service}/build`), { recursive: true });
+        fsa.rmSync(createPath(`services/${service}/build`), { recursive: true });
     }
 }
 

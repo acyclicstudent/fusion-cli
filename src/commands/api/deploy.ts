@@ -16,7 +16,7 @@ export const deploy = async () => {
 const reset = async () => {
     if (fs.existsSync(createPath('/api/dist'))) {
         console.log('Removing dist');
-        fsa.rmdirSync(createPath('/api/dist'), { recursive: true });
+        fsa.rmSync(createPath('/api/dist'), { recursive: true });
     }
 }
 

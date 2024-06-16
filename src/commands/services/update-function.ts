@@ -7,38 +7,48 @@ import Chalk from 'chalk';
 import childProcess from 'child_process';
 import zip from 'bestzip';
 import fsa from 'fs-extra';
-import { retrieveConfig, retrieveStage } from "../../controllers/cli/config";
+import { retrieveConfig } from "../../controllers/cli/config";
 import { requestServiceToUser, retrieveAvailableServices } from "./shared";
 import { createPath } from '../../controllers/util/files';
 
 export const updateFunction = async () => {
-    const services = retrieveAvailableServices();
-    if (!services.length)
-        throw new Error('There are no services. Please create a new one and try again.');
-    
-    const selected = await requestServiceToUser(services); 
-    reset(selected.service);
-    console.log(Chalk.yellow('Building...'));
-    buildCode(selected.service);
-    copyPackage(selected.service);
-    console.log(Chalk.yellow('Installing dependencies...'));
-    installDependencies(selected.service);
-    console.log(Chalk.yellow('Zipping...'));
-    const zipFile = await zipFiles(selected.service);
-    const config = retrieveConfig();
-    console.log(Chalk.yellow('Actualizando función...'));
-    update(selected.service, zipFile, config);
+    try {
+        const services = retrieveAvailableServices();
+        if (!services.length)
+            throw new Error('There are no services. Please create a new one and try again.');
+        
+        const selected = await requestServiceToUser(services); 
+        reset(selected.service);
+        console.log(Chalk.yellow('Building...'));
+        buildCode(selected.service);
+        copyPackage(selected.service);
+        console.log(Chalk.yellow('Installing dependencies...'));
+        installDependencies(selected.service);
+        console.log(Chalk.yellow('Zipping...'));
+        const zipFile = await zipFiles(selected.service);
+        const config = retrieveConfig();
+        console.log(Chalk.yellow('Actualizando función...'));
+        update(selected.service, zipFile, config);
+    } catch (err: any) {
+        console.log(Chalk.red(err.message));
+    }
 }
 
 const buildCode = (service: string) => {
+    const path = createPath('services/' + service);
     const command = `
-        cd ${createPath('services/' + service + '&& tsc')} 
-    `;
-    console.log('Running build...', command);
-    const result = childProcess.execSync(
-        prepareCommand(command)
-    ).toString();
-    console.log(result);
+        cd "${path}" && tsc
+    `.trim();
+    console.log('Running build on path: ', path);
+    try {
+        const result = childProcess.execSync(
+            prepareCommand(command)
+        ).toString();
+        console.log(result);
+    } catch (err: any) {
+        console.error(Chalk.red(err.stdout.toString()))
+        throw new Error('Build failed.');
+    }
 }
 
 const copyPackage = (service: string) => {
@@ -49,9 +59,10 @@ const copyPackage = (service: string) => {
 }
 
 const installDependencies = (service: string) => {
+    const path = createPath('services/' + service);
     const command = `
-        cd ${createPath('services/' + service + '/build && npm install --production')}
-    `;
+        cd "${path}/build" && npm install --production
+    `.trim();
     console.log('Running install...', command);
     const result = childProcess.execSync(
         prepareCommand(command)
@@ -76,11 +87,11 @@ const zipFiles = async (service: string) => {
 const reset = async (service: string) => {
     if (fs.existsSync(createPath(`services/${service}/dist`))) {
         console.log('Removing dist');
-        fsa.rmdirSync(createPath(`services/${service}/dist`), { recursive: true });
+        fsa.rmSync(createPath(`services/${service}/dist`), { recursive: true });
     }
     if (fs.existsSync(createPath(`services/${service}/build`))) {
         console.log('Removing build');
-        fsa.rmdirSync(createPath(`services/${service}/build`), { recursive: true });
+        fsa.rmSync(createPath(`services/${service}/build`), { recursive: true });
     }
 }
 
