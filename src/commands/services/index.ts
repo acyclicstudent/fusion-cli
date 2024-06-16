@@ -28,6 +28,11 @@ export const registerServicesCommand = (program: Command) => {
         .action(serve);
 
     services.
+        command('update-function')
+        .description('Updates a function.')
+        .action(updateFunction);
+
+    services.
         command('install [package]')
         .description('Create a new service.')
         .action(install);

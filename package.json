@@ -1,7 +1,7 @@
 {
   "name": "@nirbby-lab/fusion-cli",
   "version": "1.0.5",
-  "description": "Fusion Serverless Deployment  CLI",
+  "description": "Fusion Serverless Deployment CLI",
   "main": "index.js",
   "bin": {
     "fusion": "bin/fusion.js"
