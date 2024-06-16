@@ -5,7 +5,7 @@ import { program, updateWorkDir } from './program';
 
 export const retrieveConfig = () => {
     try {
-        let currentDirectory = process.cwd();
+        let currentDirectory = process.env.PWD || process.cwd();
         
         // Check if exists in current directory
         let isFound = false;
