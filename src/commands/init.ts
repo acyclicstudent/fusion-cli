@@ -29,18 +29,14 @@ export const handleInit = async () => {
                     Name: config.project || 'unknown',
                     Region: config.region || 'us-west-2',
                     AWSProfile: config.profile || 'default',
-                    DeploymentBucket: config.bucket || `${config.project}-deployment-bucket`
                 }
             })
         );
 
-        console.log(Chalk.yellow('Creating deployment bucket stack...'));
-        copyTemplateStack('deployment-bucket.yml', config.project + '-deployment-bucket.yml');
-        
         console.log(Chalk.yellow('Creating git ignore...'));
         fs.writeFileSync(createPath('.gitignore'), '**/node_modules\n**/dist\n**/build\n**/package-lock.json');
         
-        console.log(Chalk.green(`Project configurated.\nPlease deploy the stack ${config.project}-deployment-bucket.yml using 'fusion stacks deploy'.`));
+        console.log(Chalk.green(`Project configuration finished.`));
     } catch (err) {
         console.log(Chalk.red('Error: ', (err as Error).message));
     }
@@ -61,10 +57,6 @@ export const requestProjectConfig = async () => {
             name: 'profile',
             message: 'AWS Profile: ',
             default: 'default'
-        },
-        {
-            name: 'bucket',
-            message: 'Deployment Bucket: '
-        },
+        }
     ]);
 }

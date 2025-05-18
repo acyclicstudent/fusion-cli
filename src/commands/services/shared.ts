@@ -3,6 +3,8 @@ import { createPath } from '../../controllers/util/files';
 import inquirer from "inquirer";
 
 export const retrieveAvailableServices = () =>{
+    if (!fs.existsSync(createPath('services')))
+        return [];
     return fs.readdirSync(createPath('services'));
 }
 

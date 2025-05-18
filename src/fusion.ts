@@ -2,19 +2,19 @@
 import { registerInitCommand } from './commands/init';
 import { registerAPICommand } from './commands/api';
 import { registerServicesCommand } from './commands/services';
-import { registerStacksCommand } from './commands/stacks';
 import { program } from './controllers/cli/program';
 import { registerAuthCommand } from './commands/auth';
 
 
 // Main program.
 const main = () => {
+    console.log('Fusion CLI');
+    console.log('Version 2.0.0');
     // Set commands.
     registerInitCommand(program);
     registerAPICommand(program);
     registerServicesCommand(program);
     registerAuthCommand(program);
-    registerStacksCommand(program);
     
     // Parse command line arguments
     program.option('--stage <stage>', 'stage to deploy');
